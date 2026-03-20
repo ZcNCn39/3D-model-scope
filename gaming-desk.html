@@ -165,7 +165,7 @@
         <div class="info-item">桌面尺寸: <b>180cm × 80cm</b></div>
         <div class="info-item">机箱位置: <b>左侧 (距桌边5cm)</b></div>
         <div class="info-item">主显示器: <b>桌面中心</b></div>
-        <div class="info-item">副显示器: <b>右侧偏外 45cm处</b></div>
+        <div class="info-item">副显示器: <b>右侧与主屏相接，向外旋转45°</b></div>
         <div class="info-item ok">鼠标区域: 完全自由无遮挡</div>
         <div class="info-item ok">手部空间: 45cm深度不受限</div>
     </div>
@@ -371,13 +371,14 @@
         // 创建显示器
         function createMonitors() {
             // 主显示器 - 桌面中心
-            createMonitor(0, 0, true);
+            createMonitor(0, true);
             
-            // 副显示器 - 右侧45cm处
-            createMonitor(45, 0, false);
+            // 副显示器 - 位于主显示器右侧，左边框与主显示器右边框相接，并旋转45度
+            createSideMonitor();
         }
         
-        function createMonitor(offsetX, offsetZ, isMain) {
+        // 创建主显示器
+        function createMonitor(offsetX, isMain) {
             const monitorGroup = new THREE.Group();
             
             // 屏幕
@@ -424,10 +425,77 @@
             base.position.y = 1;
             monitorGroup.add(base);
             
-            // 位置计算
-            const zPos = -PARAMS.desk.depth / 4 + offsetZ;
+            // 位置计算 - 桌面中心
+            const zPos = -PARAMS.desk.depth / 4;
             monitorGroup.position.set(offsetX, PARAMS.desk.height, zPos);
             
+            // 略微朝向用户
+            monitorGroup.rotation.x = -0.05;
+            
+            scene.add(monitorGroup);
+            objects.push(monitorGroup);
+        }
+        
+        // 创建侧边副显示器（旋转45度）
+        function createSideMonitor() {
+            const monitorGroup = new THREE.Group();
+            const isMain = false;
+            
+            // 屏幕
+            const screenGeometry = new THREE.BoxGeometry(
+                PARAMS.monitor.width,
+                PARAMS.monitor.height,
+                1
+            );
+            const screenMaterial = new THREE.MeshStandardMaterial({
+                color: 0x0a0a0a,
+                roughness: 0.2,
+                metalness: 0.5
+            });
+            const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+            screen.position.y = PARAMS.monitor.height / 2 + PARAMS.monitor.standHeight;
+            // 调整屏幕位置，使左边框位于原点（用于旋转轴）
+            screen.position.x = PARAMS.monitor.width / 2;
+            monitorGroup.add(screen);
+            
+            // 显示画面
+            const displayGeometry = new THREE.PlaneGeometry(
+                PARAMS.monitor.width - 2,
+                PARAMS.monitor.height - 2
+            );
+            const displayColor = 0x00ff88;
+            const displayMaterial = new THREE.MeshBasicMaterial({ color: displayColor });
+            const display = new THREE.Mesh(displayGeometry, displayMaterial);
+            display.position.set(
+                PARAMS.monitor.width / 2,
+                PARAMS.monitor.height / 2 + PARAMS.monitor.standHeight,
+                0.6
+            );
+            monitorGroup.add(display);
+            
+            // 支架 - 需要偏移以配合旋转
+            const standGeometry = new THREE.BoxGeometry(15, PARAMS.monitor.standHeight, 10);
+            const standMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const stand = new THREE.Mesh(standGeometry, standMaterial);
+            stand.position.y = PARAMS.monitor.standHeight / 2;
+            stand.position.x = PARAMS.monitor.width / 2;
+            stand.castShadow = true;
+            monitorGroup.add(stand);
+            
+            // 底座
+            const baseGeometry = new THREE.BoxGeometry(20, 2, 15);
+            const base = new THREE.Mesh(baseGeometry, standMaterial);
+            base.position.y = 1;
+            base.position.x = PARAMS.monitor.width / 2;
+            monitorGroup.add(base);
+            
+            // 位置计算 - 左边框与主显示器右边框相接
+            const mainMonitorRightEdge = PARAMS.monitor.width / 2; // 主显示器中心 + 半宽
+            const zPos = -PARAMS.desk.depth / 4;
+            monitorGroup.position.set(mainMonitorRightEdge, PARAMS.desk.height, zPos);
+            
+            // 旋转45度（绕Y轴，向前朝向用户）
+            monitorGroup.rotation.y = -Math.PI / 4; // 45度
             // 略微朝向用户
             monitorGroup.rotation.x = -0.05;
             
