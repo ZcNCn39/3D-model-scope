@@ -155,6 +155,10 @@
             <span>鼠标区域</span>
         </div>
         <div class="legend-item">
+            <div class="legend-color" style="background: #ff4444;"></div>
+            <span>鼠标垫</span>
+        </div>
+        <div class="legend-item">
             <div class="legend-color" style="background: rgba(0, 255, 136, 0.3);"></div>
             <span>手部活动空间</span>
         </div>
@@ -539,6 +543,57 @@
             const mouse = new THREE.Mesh(mouseGeometry, mouseMaterial);
             mouse.position.set(-10, PARAMS.desk.height + 2, 15);
             scene.add(mouse);
+            
+            // 鼠标垫 - 放在右边屏幕下方
+            createMousePad();
+        }
+        
+        // 创建鼠标垫
+        function createMousePad() {
+            const padWidth = 35;
+            const padDepth = 28;
+            
+            // 鼠标垫主体
+            const padGeometry = new THREE.BoxGeometry(padWidth, 0.5, padDepth);
+            const padMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xff4444,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            const mousePad = new THREE.Mesh(padGeometry, padMaterial);
+            
+            // 位置：右边屏幕（副显示器）下方
+            // 副显示器位置：x = PARAMS.monitor.width / 2, z = -PARAMS.desk.depth / 4
+            // 放在副显示器前方偏右
+            const sideMonitorX = PARAMS.monitor.width / 2 + 20; // 副显示器区域偏右
+            const sideMonitorZ = -PARAMS.desk.depth / 4 + 25;   // 副显示器前方
+            
+            mousePad.position.set(sideMonitorX, PARAMS.desk.height + 0.3, sideMonitorZ);
+            mousePad.castShadow = true;
+            mousePad.receiveShadow = true;
+            scene.add(mousePad);
+            
+            // 鼠标垫边框装饰
+            const borderGeometry = new THREE.BoxGeometry(padWidth + 1, 0.3, padDepth + 1);
+            const borderMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x222222,
+                roughness: 0.9
+            });
+            const border = new THREE.Mesh(borderGeometry, borderMaterial);
+            border.position.set(sideMonitorX, PARAMS.desk.height + 0.2, sideMonitorZ);
+            scene.add(border);
+            
+            // 鼠标垫上的Logo图案（简单方块表示）
+            const logoGeometry = new THREE.PlaneGeometry(8, 8);
+            const logoMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xffffff,
+                opacity: 0.3,
+                transparent: true
+            });
+            const logo = new THREE.Mesh(logoGeometry, logoMaterial);
+            logo.rotation.x = -Math.PI / 2;
+            logo.position.set(sideMonitorX, PARAMS.desk.height + 0.6, sideMonitorZ);
+            scene.add(logo);
         }
         
         // 创建手部活动空间
