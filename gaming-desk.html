@@ -125,12 +125,15 @@
     <div id="container"></div>
     
     <div class="controls">
-        <h2>视角切换</h2>
+        <h2>视角控制</h2>
         <button onclick="setView('top')">俯视视角</button>
         <button onclick="setView('front')">正视视角</button>
         <button onclick="setView('side')">侧视视角</button>
         <button onclick="setView('iso')">等轴视角</button>
         <button onclick="resetView()">重置视角</button>
+        <div style="margin-top:15px;font-size:12px;color:#888;border-top:1px solid #333;padding-top:10px;">
+            键盘：↑↓←→ 移动视角中心
+        </div>
     </div>
     
     <div class="legend">
@@ -201,7 +204,7 @@
                 1,
                 1000
             );
-            camera.position.set(150, 120, 150);
+            camera.position.set(150, 180, 150);
             
             // 创建渲染器
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -573,7 +576,7 @@
                     camera.lookAt(0, 50, 0);
                     break;
                 case 'iso':
-                    camera.position.set(150, 120, 150);
+                    camera.position.set(150, 180, 150);
                     camera.lookAt(0, 40, 0);
                     break;
             }
@@ -581,7 +584,7 @@
         }
         
         function resetView() {
-            camera.position.set(150, 120, 150);
+            camera.position.set(150, 180, 150);
             camera.lookAt(0, 40, 0);
             controls.reset();
         }
@@ -592,6 +595,27 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
+        
+        // 键盘控制视角中心
+        const moveSpeed = 5;
+        document.addEventListener('keydown', (event) => {
+            const target = controls.target;
+            switch(event.key) {
+                case 'ArrowUp':
+                    target.z -= moveSpeed;
+                    break;
+                case 'ArrowDown':
+                    target.z += moveSpeed;
+                    break;
+                case 'ArrowLeft':
+                    target.x -= moveSpeed;
+                    break;
+                case 'ArrowRight':
+                    target.x += moveSpeed;
+                    break;
+            }
+            controls.update();
+        });
         
         // 动画循环
         function animate() {
